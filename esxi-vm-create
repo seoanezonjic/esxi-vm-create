@@ -353,7 +353,8 @@ VMX.append('pciBridge7.virtualDev = "pcieRootPort"')
 VMX.append('pciBridge7.functions = "8"')
 VMX.append('guestOS = "' + GUESTOS + '"')
 if NET != "None":
-    VMX.append('ethernet0.virtualDev = "vmxnet3"')
+    #VMX.append('ethernet0.virtualDev = "vmxnet3"')
+    VMX.append('ethernet0.virtualDev = "e1000e"')
     VMX.append('ethernet0.present = "TRUE"')
     VMX.append('ethernet0.networkName = "' + NET + '"')
     if MAC == "":
@@ -404,9 +405,15 @@ if not isDryRun and not CheckHasErrors:
             print "Create " + NAME + ".vmx file"
         (stdin, stdout, stderr) = ssh.exec_command("mkdir " + FullPath )
         type(stdin)
-        for line in VMX:
-            (stdin, stdout, stderr) = ssh.exec_command("echo " + line + " >>" + MyVM + ".vmx")
-            type(stdin)
+        
+        vmx_string = "\n".join(VMX)
+        (stdin, stdout, stderr) = ssh.exec_command("echo -e '" + vmx_string + "' >>" + MyVM + ".vmx")
+        type(stdin)
+
+        #for line in VMX:
+        #    print (line)
+        #    (stdin, stdout, stderr) = ssh.exec_command("echo " + line + " >>" + MyVM + ".vmx")
+        #    type(stdin)
 
         # Create vmdk
         if isVerbose:
@@ -420,6 +427,8 @@ if not isDryRun and not CheckHasErrors:
         (stdin, stdout, stderr) = ssh.exec_command("vim-cmd solo/registervm " + MyVM + ".vmx")
         type(stdin)
         VMID = int(stdout.readlines()[0])
+	print(VMID)
+	print(stdout)
 
         # Power on VM
         if isVerbose:
